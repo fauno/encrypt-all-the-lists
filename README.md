@@ -1,0 +1,48 @@
+# Listas de correo cifradas
+
+O llaves privadas compartidas, basado en experimentos vistos en
+hacktivistas@listas.sindominio.net :)
+
+Se trata de crear una llave privada para una identidad común (como una
+lista de correo), que luego se comparte entre todas las participantes.
+
+Esto permite tener una conversación cifrada de una a muchas sin
+desarrollo extra, sólo considera a las destinatarias como una sola
+entidad, es decir un conjunto con la misma llave.
+
+## Problemas
+
+* Si alguien se va del grupo hay que renovar las llaves (!)
+
+## Ventajas
+
+* No hay que implementar software nuevo
+
+* El servidor de listas no sabe nada sobre el contenido de los mensajes
+  (otras implementaciones descifran y vuelven a cifrar)
+
+## Uso
+
+Crear una llave para una lista:
+
+  crear-lista-cifrada hacktivistas@listas.sindominio.net participante1 participante2...
+
+Devuelve un archivo `hacktivistas@listas.sindominio.net.asc` cifrado
+para todas las participantes especificadas.
+
+Importar la llave localmente:
+
+  gpg --decrypt <hacktivistas@listas.sindominio.net.asc | gpg --import
+
+Esto hace dos cosas:
+
+* Importa la llave pública de la lista, para que podamos cifrar mensajes
+  destinados a esta
+
+* Importa la llave privada de la lista, para que podamos descifrar los
+  mensajes enviados
+
+## TODO
+
+* Guardar el llavero original para poder emitir otras subllaves y
+  revocar las existentes?  Quién controla el llavero original?

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# crear-lista-cifrada - crea una llave gpg compartida para usar en
+#                       listas de correo privadas
+#
+# © 2014 Nicolás Reynolds <fauno@endefensadelsl.org>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+# 
+# http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html
+set -e
+
+# debuguear si exportamos la variable DEBUG con cualquier cosa
+test ! -z $DEBUG && set -x
+
+if test $# -eq 0 ; then
+  echo "Uso: ${0##*/} lab@hackcoop.com.ar [lista] [de] [suscriptores]"
+  exit 0
+fi
+
+pgrep haveged &>/dev/null || echo "Te recomiendo instalar haveged ;)"
+
+# el home temporal para generar los archivos
+OLDHOME="${HOME}"
+export HOME="$(mktemp -dt XXXX)"
+
+# solo por las dudas!
+test "${OLDHOME}" = "${HOME}" && exit 1
+test -d "${HOME}/.gnupg" && exit 1
+
+lista="${1}" ; shift
+
+# genera una llave para la lista especificada, los bits de la llave
+# maestra no importan porque se va a descartar luego.
+echo "%echo Generando clave para la lista ${lista}
+Key-Type: RSA
+Key-Length: 1024
+Name-Real: ${lista%%@*}
+Name-Email: ${lista}
+Preferences: SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
+Key-Usage: encrypt
+Subkey-Type: RSA
+Subkey-Length: 4096
+Subkey-Usage: encrypt
+Passphrase: esta contraseña será descartada
+Expire-Date: 0
+Keyserver: hkp://localhost
+%commit
+%echo Listo" | gpg --gen-key --batch --quiet
+
+# exporta la subllave completa y la cifra para todas las participantes.
+# el proceso descarta la llave maestra.
+{
+  gpg --armor --export
+  gpg --armor --export-secret-subkeys
+} | HOME="${OLDHOME}" \
+    gpg --default-recipient-self \
+        $(for i in $@; do echo "--hidden-recipient $i"; done) \
+        --encrypt \
+        --armor >"${lista}.asc"
+
+echo
+echo "Compartí el archivo ${lista}.asc con ${@// /, }"
+echo
+echo "Para importarlo:"
+echo "  gpg --decrypt <${lista}.asc | gpg --import"
+
+# TODO eliminar los archivos temporales sin mandarse el moco de borrar
+# el HOME real por error :O
