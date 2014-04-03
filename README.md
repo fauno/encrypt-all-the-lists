@@ -19,7 +19,7 @@ entidad, es decir un conjunto con la misma llave.
 * No hay que implementar software nuevo
 
 * El servidor de listas no sabe nada sobre el contenido de los mensajes
-  (otras implementaciones descifran y vuelven a cifrar)
+  ([otras implementaciones descifran y vuelven a cifrar](https://schleuder2.nadir.org/))
 
 ## Uso
 
@@ -42,7 +42,17 @@ Esto hace dos cosas:
 * Importa la llave privada de la lista, para que podamos descifrar los
   mensajes enviados
 
+Ver las llaves:
+
+  gpg --list-secret-keys
+
 ## TODO
 
 * Guardar el llavero original para poder emitir otras subllaves y
   revocar las existentes?  Quién controla el llavero original?
+
+## Referencias
+
+* [OpenPGP Best Practices](https://we.riseup.net/riseuplabs+paow/openpgp-best-practices)
+* [Moving a GPG Key (Privately)](http://montemazuma.wordpress.com/2010/03/01/moving-a-gpg-key-privately/)
+* [Creating the perfect GPG keypair](https://alexcabal.com/creating-the-perfect-gpg-keypair/)
