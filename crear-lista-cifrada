@@ -36,11 +36,11 @@ lista="${1}" ; shift
 # maestra no importan porque se va a descartar luego.
 echo "%echo Generando clave para la lista ${lista}
 Key-Type: RSA
-Key-Length: 1024
+Key-Length: 2048
 Name-Real: ${lista%%@*}
 Name-Email: ${lista}
 Preferences: SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
-Key-Usage: encrypt
+Key-Usage: sign
 Subkey-Type: RSA
 Subkey-Length: 4096
 Subkey-Usage: encrypt
@@ -54,7 +54,7 @@ Keyserver: hkp://localhost
 # el proceso descarta la llave maestra.
 {
   gpg --armor --export
-  gpg --armor --export-secret-subkeys
+  gpg --armor --export-secret-subkeys --export-options export-reset-subkey-passwd
 } | HOME="${OLDHOME}" \
     gpg --default-recipient-self \
         $(for i in $@; do echo "--hidden-recipient $i"; done) \
