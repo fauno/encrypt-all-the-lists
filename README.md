@@ -32,7 +32,7 @@ para todas las participantes especificadas.
 
 Importar la llave localmente:
 
-  gpg --decrypt <hacktivistas@listas.sindominio.net.asc | gpg --import
+  importar-lista-cifrada hacktivistas@listas.sindominio.net.asc
 
 Esto hace dos cosas:
 
