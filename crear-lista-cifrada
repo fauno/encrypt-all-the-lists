@@ -22,13 +22,12 @@ fi
 
 pgrep haveged &>/dev/null || echo "Te recomiendo instalar haveged ;)"
 
-# el home temporal para generar los archivos
-OLDHOME="${HOME}"
-export HOME="$(mktemp -dt XXXX)"
-
-# solo por las dudas!
-test "${OLDHOME}" = "${HOME}" && exit 1
-test -d "${HOME}/.gnupg" && exit 1
+# TODO como alias es más simple de declarar pero luego no lo toma como
+# comando válido :|
+LISTA_HOME="$(mktemp -dt XXXX || echo /tmp/${0%%/*})"
+lista_gpg() {
+  HOME=$LISTA_HOME gpg $@
+}
 
 lista="${1}" ; shift
 
@@ -44,19 +43,19 @@ Key-Usage: sign
 Subkey-Type: RSA
 Subkey-Length: 4096
 Subkey-Usage: encrypt
-Passphrase: esta contraseña será descartada
+Passphrase: ${lista%%@*}
+%echo La contraseña temporal para esta llave es ${lista%%@*}
 Expire-Date: 0
 Keyserver: hkp://localhost
 %commit
-%echo Listo" | gpg --gen-key --batch --quiet
+%echo Listo" | lista_gpg --gen-key --batch --quiet
 
 # exporta la subllave completa y la cifra para todas las participantes.
-# el proceso descarta la llave maestra.
+# el proceso inutiliza la llave maestra y resetea la contraseña
 {
-  gpg --armor --export
-  gpg --armor --export-secret-subkeys --export-options export-reset-subkey-passwd
-} | HOME="${OLDHOME}" \
-    gpg --default-recipient-self \
+  lista_gpg --armor --export
+  lista_gpg --armor --export-secret-subkeys --export-options export-reset-subkey-passwd
+} | gpg --default-recipient-self \
         $(for i in $@; do echo "--hidden-recipient $i"; done) \
         --encrypt \
         --armor >"${lista}.asc"
@@ -65,7 +64,5 @@ echo
 echo "Compartí el archivo ${lista}.asc con ${@// /, }"
 echo
 echo "Para importarlo:"
-echo "  gpg --decrypt <${lista}.asc | gpg --import"
+echo "  importar-lista-cifrada ${lista}.asc"
 
-# TODO eliminar los archivos temporales sin mandarse el moco de borrar
-# el HOME real por error :O
