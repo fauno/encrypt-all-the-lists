@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# crear-lista-cifrada - crea una llave gpg compartida para usar en
-#                       listas de correo privadas
+# importar-lista-cifrada - agrega las llaves de la lista a nuestro llavero
 #
 # © 2014 Nicolás Reynolds <fauno@endefensadelsl.org>
 #
@@ -14,6 +13,8 @@ set -e
 
 # debuguear si exportamos la variable DEBUG con cualquier cosa
 test ! -z $DEBUG && set -x
+# decirle a pinentry qué tty usamos
+test -z $GPG_TTY && export GPG_TTY=$(tty)
 
 if test $# -eq 0 ; then
   echo "Importa la llave de una lista en tu llavero y te deja ponerle una contraseña"
