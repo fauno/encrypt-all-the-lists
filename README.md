@@ -25,14 +25,14 @@ entidad, es decir un conjunto con la misma llave.
 
 Crear una llave para una lista:
 
-  crear-lista-cifrada hacktivistas@listas.sindominio.net participante1 participante2...
+    crear-lista-cifrada hacktivistas@listas.sindominio.net participante1 participante2...
 
 Devuelve un archivo `hacktivistas@listas.sindominio.net.asc` cifrado
 para todas las participantes especificadas.
 
 Importar la llave localmente:
 
-  importar-lista-cifrada hacktivistas@listas.sindominio.net.asc
+    importar-lista-cifrada hacktivistas@listas.sindominio.net.asc
 
 Esto hace dos cosas:
 
@@ -44,7 +44,11 @@ Esto hace dos cosas:
 
 Ver las llaves:
 
-  gpg --list-secret-keys
+    gpg --list-secret-keys
+
+Invitar a alguien más:
+
+    exportar-lista-cifrada hacktivistas@listas.sindominio.net fauno@endefensadelsl.org
 
 ## TODO
 
