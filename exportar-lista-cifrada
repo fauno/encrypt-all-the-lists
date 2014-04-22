@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# exportar-lista-cifrada - exporta las llaves privadas de forma segura
+#
+# © 2014 Nicolás Reynolds <fauno@endefensadelsl.org>
+#
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.
+# 
+# http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html
+set -e
+
+# debuguear si exportamos la variable DEBUG con cualquier cosa
+test ! -z $DEBUG && set -x
+# decirle a pinentry qué tty usamos
+test -z $GPG_TTY && export GPG_TTY=$(tty)
+
+if test $# -eq 0 ; then
+  echo "Exporta la llave de una lista en tu llavero para compartirla"
+  echo
+  echo "Uso: ${0##*/} lab@hackcoop.com.ar remi@ten.te"
+  exit 0
+fi
+
+listkey="$1" ; shift
+
+echo "Exportando ${listkey}"
+# basicamente lo mismo que el ultimo paso de crear-lista-cifrada
+{
+  gpg --armor --export "${listkey}"
+  gpg --armor --export-secret-subkeys \
+      --export-options export-reset-subkey-passwd \
+      "${listkey}"
+} | gpg --default-recipient-self \
+        $(for i in $@; do echo "--hidden-recipient $i"; done) \
+        --encrypt \
+        --armor >"${listkey}.asc"
+
+echo "Envía el archivo cifrado ${listkey}.asc a ${@// /, }"
+
+# TODO usar sendmail si está disponible (pero cómo saber si es
+# funcional?)
