@@ -41,7 +41,7 @@ pgrep haveged &>/dev/null || echo "Te recomiendo instalar haveged ;)"
 # Crear llaves permanentes
 if ${PERMANENTE}; then
   # El HOME es el mismo
-  LISTA_HOME="${HOME}"
+  readonly LISTA_HOME="${HOME}"
 
   echo "Llave permanente"
   echo "================"
@@ -52,7 +52,7 @@ revocar llaves viejas y crear nuevas.
 Sin embargo, esto quiere decir que tenés el poder de decidir qué llave
 se va a usar en la lista." | fmt -u
 else
-  LISTA_HOME="$(mktemp -dt XXXX || echo /tmp/${0%%/*})"
+  readonly LISTA_HOME="$(mktemp -dt XXXX || echo /tmp/${0%%/*})"
 
   echo "Llave adhoc"
   echo "==========="
@@ -101,7 +101,8 @@ Keyserver: hkp://localhost
         --armor >"${lista}.asc"
 
 echo
-test "${#@}" -gt 1 && echo "Compartí el archivo ${lista}.asc con ${@// /, }"
+test "${#@}" -gt 1 \
+  && echo "Compartí el archivo ${lista}.asc con ${@// /, }"
 echo
 ${PERMANENTE} || echo "Para importarlo:"
 ${PERMANENTE} || echo "  importar-lista-cifrada ${lista}.asc"
@@ -109,4 +110,5 @@ ${PERMANENTE} || echo "  importar-lista-cifrada ${lista}.asc"
 # borrar el home temporal
 # podríamos probar por PERMANENTE pero mejor chequear que no se trate de
 # nuestro HOME
-# test "${HOME}" != "${LISTA_HOME}" && shred -u "${LISTA_HOME}/".gnupg/*
+test "${HOME}" != "${LISTA_HOME}" \
+  && find "${LISTA_HOME}/".gnupg/ -type f -exec shred -u {} \;
