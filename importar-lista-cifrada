@@ -26,6 +26,7 @@ fi
 gpg --decrypt <${1} | gpg --import
 # TODO asume que es la última subllave importada
 gpg --with-colons --list-secret-keys |
+grep '@' |
 tail -n1 |
 cut -d: -f5 | while read subkey; do
   echo "Cambiando la contraseña de ${subkey}"
