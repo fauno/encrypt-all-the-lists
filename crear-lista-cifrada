@@ -16,21 +16,55 @@ set -e
 test ! -z $DEBUG && set -x
 
 if test $# -eq 0 ; then
-  echo "Uso: ${0##*/} lab@hackcoop.com.ar [lista] [de] [suscriptores]"
+  echo "Crea las llaves para una lista cifrada"
+  echo 
+  echo "    -p Crea una llave permanente"
+  echo "Uso: ${0##*/} [-p] lab@hackcoop.com.ar [lista] [de] [suscriptores]"
   exit 0
 fi
 
+PERMANENTE=false
+while getopts p flag; do
+  case ${flag} in
+    p) PERMANENTE=true ;;
+  esac
+done; let OPTIND--; shift ${OPTIND}
+
 pgrep haveged &>/dev/null || echo "Te recomiendo instalar haveged ;)"
+
+# Crear llaves permanentes
+if ${PERMANENTE}; then
+  # El HOME es el mismo
+  LISTA_HOME="${HOME}"
+
+  echo "Llave permanente"
+  echo "================"
+  echo "Se está creando una llave permanente, esto quiere decir que la
+llave maestra de la lista se agregará a tu llavero local y vas a poder
+revocar llaves viejas y crear nuevas.
+
+Sin embargo, esto quiere decir que tenés el poder de decidir qué llave
+se va a usar en la lista." | fmt -u
+else
+  LISTA_HOME="$(mktemp -dt XXXX || echo /tmp/${0%%/*})"
+
+  echo "Llave adhoc"
+  echo "==========="
+  echo "Se está creando una llave adhoc, esto quiere decir que no habrá
+una llave maestra disponible y no será posible revocar la llave de
+la lista ni crear nuevas.  Para cambiar la llave de la lista basta con
+crear una llave nueva (adhoc o permanente)." | fmt -u
+fi
 
 # TODO como alias es más simple de declarar pero luego no lo toma como
 # comando válido :|
-LISTA_HOME="$(mktemp -dt XXXX || echo /tmp/${0%%/*})"
 lista_gpg() {
   HOME=$LISTA_HOME gpg $@
 }
 
 lista="${1}" ; shift
 
+echo
 # genera una llave para la lista especificada, los bits de la llave
 # maestra no importan porque se va a descartar luego.
 echo "%echo Generando clave para la lista ${lista}
@@ -61,8 +95,12 @@ Keyserver: hkp://localhost
         --armor >"${lista}.asc"
 
 echo
-echo "Compartí el archivo ${lista}.asc con ${@// /, }"
+test "${#@}" -gt 1 && echo "Compartí el archivo ${lista}.asc con ${@// /, }"
 echo
-echo "Para importarlo:"
-echo "  importar-lista-cifrada ${lista}.asc"
+${PERMANENTE} || echo "Para importarlo:"
+${PERMANENTE} || echo "  importar-lista-cifrada ${lista}.asc"
 
+# borrar el home temporal
+# podríamos probar por PERMANENTE pero mejor chequear que no se trate de
+# nuestro HOME
+# test "${HOME}" != "${LISTA_HOME}" && shred -u "${LISTA_HOME}/".gnupg/*

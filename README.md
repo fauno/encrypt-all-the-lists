@@ -54,11 +54,6 @@ Invitar a alguien más:
 
     exportar-lista-cifrada hacktivistas@listas.sindominio.net fauno@endefensadelsl.org
 
-## TODO
-
-* Guardar el llavero original para poder emitir otras subllaves y
-  revocar las existentes?  Quién controla el llavero original?
-
 ## Referencias
 
 * [OpenPGP Best Practices](https://we.riseup.net/riseuplabs+paow/openpgp-best-practices)
