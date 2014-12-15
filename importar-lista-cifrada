@@ -11,6 +11,12 @@
 # http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html
 set -e
 
+FIELD=5
+
+# en 2.1 la llave está en el campo 8
+VERSION="$(gpg --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1,2)"
+test "2.1" = "${VERSION}" && FIELD=8
+
 # debuguear si exportamos la variable DEBUG con cualquier cosa
 test ! -z $DEBUG && set -x
 # decirle a pinentry qué tty usamos
@@ -28,7 +34,7 @@ gpg --decrypt <${1} | gpg --import
 gpg --with-colons --list-secret-keys |
 grep '@' |
 tail -n1 |
-cut -d: -f5 | while read subkey; do
+cut -d: -f${FIELD} | while read subkey; do
   echo "Cambiando la contraseña de ${subkey}"
   gpg --passwd ${subkey}
 done
