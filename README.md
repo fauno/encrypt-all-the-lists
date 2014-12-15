@@ -14,6 +14,10 @@ entidad, es decir un conjunto con la misma llave.
 
 * Si alguien se va del grupo hay que renovar las llaves (!)
 
+* No funciona (todavía) con GnuPG 2.1, por [esta
+  regresión](http://lists.gnupg.org/pipermail/gnupg-devel/2014-October/028919.html)
+  que también afecta a [monkeysphere](https://monkeysphere.info)
+
 ## Ventajas
 
 * No hay que implementar software nuevo
