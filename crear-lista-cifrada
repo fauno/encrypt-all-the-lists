@@ -12,6 +12,12 @@
 # http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html
 set -e
 
+VERSION="$(gpg --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1,2)"
+if test "2.1" = "${VERSION}" ; then
+  echo "$0 todavía no funciona correctamente en esta versión de gpg"
+  exit
+fi
+
 # debuguear si exportamos la variable DEBUG con cualquier cosa
 test ! -z $DEBUG && set -x
 
