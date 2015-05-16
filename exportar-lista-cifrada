@@ -11,6 +11,20 @@
 # http://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html
 set -e
 
+VERSION="$(gpg --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1,2)"
+MVERSION="$(gpg --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f3)"
+if test "2.1" = "${VERSION}" && test 3 -lt "${MVERSION}" ; then
+  echo "$0 todavía no funciona correctamente en esta versión de gpg"
+
+  if which gpg1 &>/dev/null; then
+    echo "Usando gpg1"
+    GPG=gpg1
+  else
+    echo "Instala gpg1 para continuar"
+    exit
+  fi
+fi
+
 # debuguear si exportamos la variable DEBUG con cualquier cosa
 test ! -z $DEBUG && set -x
 # decirle a pinentry qué tty usamos
@@ -28,14 +42,13 @@ listkey="$1" ; shift
 echo "Exportando ${listkey}"
 # basicamente lo mismo que el ultimo paso de crear-lista-cifrada
 {
-  gpg --armor --export "${listkey}"
-  gpg --armor --export-secret-subkeys \
-      --export-options export-reset-subkey-passwd \
-      "${listkey}"
-} | gpg --default-recipient-self \
-        $(for i in $@; do echo "--hidden-recipient $i"; done) \
-        --encrypt \
-        --armor >"${listkey}.asc"
+  ${GPG:-gpg} --armor --export "${listkey}"
+  ${GPG:-gpg} --armor --export-secret-keys \
+              "${listkey}"
+} | ${GPG:-gpg} --default-recipient-self \
+                $(for i in $@; do echo "--hidden-recipient $i"; done) \
+                --encrypt \
+                --armor >"${listkey}.asc"
 
 echo "Envía el archivo cifrado ${listkey}.asc a ${@// /, }"
 
