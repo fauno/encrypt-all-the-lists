@@ -15,7 +15,14 @@ set -e
 VERSION="$(gpg --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1,2)"
 if test "2.1" = "${VERSION}" ; then
   echo "$0 todavía no funciona correctamente en esta versión de gpg"
-  exit
+
+  if which gpg1 &>/dev/null; then
+    echo "Usando gpg1"
+    GPG=gpg1
+  else
+    echo "Instala gpg1 para continuar"
+    exit
+  fi
 fi
 
 # debuguear si exportamos la variable DEBUG con cualquier cosa
@@ -65,7 +72,7 @@ fi
 # TODO como alias es más simple de declarar pero luego no lo toma como
 # comando válido :|
 lista_gpg() {
-  HOME=$LISTA_HOME gpg $@
+  HOME=$LISTA_HOME ${GPG:-gpg} $@
 }
 
 lista="${1}" ; shift
@@ -95,10 +102,10 @@ Keyserver: hkp://localhost
 {
   lista_gpg --armor --export
   lista_gpg --armor --export-secret-subkeys --export-options export-reset-subkey-passwd
-} | gpg --default-recipient-self \
-        $(for i in $@; do echo "--hidden-recipient $i"; done) \
-        --encrypt \
-        --armor >"${lista}.asc"
+} | ${GPG:-gpg} --default-recipient-self \
+                $(for i in $@; do echo "--hidden-recipient $i"; done) \
+                --encrypt \
+                --armor >"${lista}.asc"
 
 echo
 test "${#@}" -gt 1 \
